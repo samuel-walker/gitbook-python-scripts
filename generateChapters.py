@@ -7,6 +7,11 @@ import requests  # lib for reading url as file
 import re # regex
 import wget
 
+# function to split camel case string to list
+def camel_case_split(identifier):
+    matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
+    return [m.group(0) for m in matches]
+
 # define variables
 # update bookpath if repo changes
 bookpath = "https://raw.githubusercontent.com/safesoftware/FMETraining/"
@@ -49,8 +54,8 @@ with open('chapters.csv', 'r') as csvfile: # open csv
     next(csvfile, None) # skip header
     data = csv.reader(csvfile, delimiter=',') # define csvreader
     for row in data: # read rows in csv
-        # camel case to spaces (not working with file exts)
-        title = re.sub("([a-z])([A-Z])","\g<1> \g<2>",row[6])
+        # camel case to proper title
+        title = ' '.join(camel_case_split(row[6]))
         # write link in summary with proper indentation
         summary.write(2*int(row[3])*" " + "* [" + title[5:-3] + "](" + row[8] + ")\n")
 
