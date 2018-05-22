@@ -1,4 +1,6 @@
 #!/usr/bin/env
+# requires pandoc installed and added to path
+# likely doesn't work on Unix systems due to filepaths
 
 # import required modules
 import os # lib for operating system operations
@@ -31,6 +33,7 @@ with open('chapters.csv', 'r') as csvfile: # open csv
     data = csv.reader(csvfile, delimiter=',') # define csvreader
     for row in data: # iterate on urls to generate chapters
         if not (row[0] + row[9]): # don't worry about sections not in KC
+            print("not")
             pass
         elif row[9]: # download process for KC articles
             if not os.path.isfile(row[8]): # check if file already exists
@@ -75,12 +78,14 @@ with open('chapters.csv', 'r') as csvfile: # open csv
                     line = line.replace("###", "")
                     line = line.replace("Article created with FME Desktop 2018.0", "")
                     line = line.replace("[thub.nodes.view.add-new-comment](#)", "")
+                    line = line.replace("***Note:** this video was created with FME version 2016.0. Some of the steps might be slightly different, but the overall process is the same. The instructions below are for 2018.0.*", "")
                     md_write.write(line) # .encode('utf-8')))
             # close files and delete them
             md_write.close()
             os.remove(read)
             md_read.close()
             os.remove(row[8][:-3] + ".html")
+            print("KC")
         else:
             # check if directory exists, make it if not
             if not os.path.exists(row[5]):
@@ -89,20 +94,26 @@ with open('chapters.csv', 'r') as csvfile: # open csv
                 os.makedirs(row[5] + "/Images")
             # download md file
             url = bookpath + branch + row[7] # form url
+            print("MD url is " + url)
             if not os.path.isfile(row[8]): # check if file already exists
+                print("Downloading " + url)
                 wget.download(url, row[8]) # if not, download it
             # download images
             with open(row[8], encoding="utf8") as md_read:
                 for line in md_read: # iterate on md file lines
                     if "](./" in line: # look for images by line
                         # grab image filename
-                        imgsplit = line[6:-2].rsplit('/', 1)[-1]
+                        imgsplit = line.strip()[6:-1].rsplit('/', 1)[-1]
                         # form url
                         url = bookpath + branch + row[0] + "/Images/" + imgsplit
+                        print("Image url is " + url)
                         # check if file already exists
                         if not os.path.exists(row[5] + "/Images/" + imgsplit):
                             # if not, download it
+                            print("Downloading image " + url)
                             wget.download(url, row[5] + "/Images/" + imgsplit)
+            print("End normal loop")
+            print(url)
 
 # generate summary.md to create book structure
 summary = open("SUMMARY.md","w") # open summary.md to write
